@@ -5,6 +5,7 @@ import Logout from '@pages/user/Logout';
 
 // Bills
 import BillForm from '@pages/bill/BillForm';
+import PaymentForm from '../pages/payment/PaymentForm';
 
 // Category
 import CategoryForm from '@pages/category/CategoryForm';
@@ -41,6 +42,11 @@ const routes = [
         path: '/bill/form/:id',
         auth: true,
         element: <BillForm />
+    },
+    {
+        path: '/payment/form',
+        auth: true,
+        element: <PaymentForm />
     },
 
     // Category
