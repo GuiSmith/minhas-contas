@@ -90,10 +90,6 @@ const PaymentForm = () => {
         return true;
     };
 
-    const handleNew = () => {
-        reset({ ...defaultValues });
-    };
-
     const create = async (data) => {
         try {
             setIsLoading(true);
@@ -118,7 +114,7 @@ const PaymentForm = () => {
 
             if (res.ok) {
                 toast.success('Pagamento registrado!');
-                handleNew();
+                navigate(`/bill/${id_conta}`);
             } else {
                 toast.warning(resData.message || 'Erro ao registrar pagamento');
             }
