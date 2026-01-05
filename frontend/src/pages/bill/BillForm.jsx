@@ -256,7 +256,8 @@ const BillForm = () => {
                     <div className='form-line'>
                         <button type='button' onClick={handleNewButton} className='btn btn-primary' >Novo</button>
                         <button type='submit' disabled={isWaitingResponse || isLoading} className='btn btn-success'>Salvar</button>
-                        <NavLink to='/bill/list' className={'btn btn-dark'} >Listar</NavLink>
+                        <NavLink to='/bill/list' className={'btn btn-secondary'} >Listar</NavLink>
+                        <NavLink to='/payment/form' className={`btn btn-dark ${Object.keys(bill).length > 0 ? '' : 'disabled'}`} state={{id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink>
                     </div>
                     {/* Campos */}
                     <div>
