@@ -18,9 +18,9 @@ import '@styles/form.css';
 const PaymentForm = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    
+
     const valor = location.state && location.state.valor ? location.state.valor : 0.00;
-    const id_conta = location.state && location.state.id_conta ? location.state.id_conta : 0;    
+    const id_conta = location.state && location.state.id_conta ? location.state.id_conta : 0;
 
     const defaultValues = {
         id_conta: id_conta,
@@ -39,7 +39,7 @@ const PaymentForm = () => {
     // Buscando conta
     useEffect(() => {
         if (isLoading) return;
-        if(id_conta == 0){
+        if (id_conta == 0) {
             navigate('/');
         }
 
@@ -50,7 +50,7 @@ const PaymentForm = () => {
             const resData = await res.json();
             setIsLoading(false);
 
-            if(!res.ok){
+            if (!res.ok) {
                 toast.error("Erro ao buscar conta");
                 return;
             }
@@ -58,7 +58,7 @@ const PaymentForm = () => {
             setBill(resData);
         }
         fetchBill();
-    },[]);
+    }, []);
 
     const validations = (data) => {
         // valor > 0
@@ -95,7 +95,7 @@ const PaymentForm = () => {
             setIsLoading(true);
 
             // Ajuste o endpoint abaixo conforme sua API
-            const endpoint = ''; // <-- preencher endpoint de criação de pagamento
+            const endpoint = 'payment'; // <-- preencher endpoint de criação de pagamento
             const completeUrl = `${apiUrl}${endpoint}`;
 
             // Preparar payload convertendo campos numéricos
@@ -106,7 +106,8 @@ const PaymentForm = () => {
                 juros: data.juros,
                 multa: data.multa,
                 desconto: data.desconto,
-                observacoes: data.observacoes
+                observacoes: data.observacoes,
+                data: data.data
             };
 
             const res = await fetch(completeUrl, apiOptions('POST', payload));
@@ -198,6 +199,13 @@ const PaymentForm = () => {
                     <div className='mb-3'>
                         <label htmlFor="desconto" className='form-label'>Desconto</label>
                         <input type="tel" className='form-control' id='desconto' {...register('desconto')} placeholder='0.00' />
+                    </div>
+                </div>
+                {/* Data de pagamento */}
+                <div className='form-line'>
+                    <div className='mb-3'>
+                        <label htmlFor="data" className='form-label'>Data de Pagamento</label>
+                        <input type="date" className='form-control' {...register('data')} />
                     </div>
                 </div>
                 {/* Observações */}

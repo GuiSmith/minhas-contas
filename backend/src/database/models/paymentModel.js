@@ -25,6 +25,10 @@ const PaymentModel = database.define('pagamento', {
         allowNull: false,
         comment: 'D = Dinheiro, CC = Crédito, CD = Débito, B = Boleto, P = Pix, T = Transferência'
     },
+    data: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+    },
     valor: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
@@ -32,14 +36,17 @@ const PaymentModel = database.define('pagamento', {
     juros: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        defaultValue: 0.00,
     },
     multa: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        defaultValue: 0.00,
     },
     desconto: {
         type: DataTypes.DECIMAL(10, 2),
         allowNull: false,
+        defaultValue: 0.00,
     },
     observacoes: {
         type: DataTypes.TEXT,

@@ -5,7 +5,7 @@ import BillModel from '../database/models/billModel.js';
 // Utils
 import { parseNumber } from '../utils/format.js';
 
-const select = async (req, res) => {
+const list = async (req, res) => {
     try {
         const { id } = req.params ?? {};
         if (!id) return res.status(400).json({ message: 'Informe o ID da conta para continuar' });
@@ -26,7 +26,7 @@ const create = async (req, res) => {
         const body = req.body ?? {};
 
         // Colunas permitidas/obrigatórias
-        const requiredColumns = ['id_conta', 'forma_pagamento', 'valor'];
+        const requiredColumns = ['id_conta', 'forma_pagamento', 'valor', 'data'];
         const permittedColumns = [...requiredColumns, 'juros', 'multa', 'desconto', 'observacoes'];
 
         // Rejeitar chaves desnecessárias
@@ -104,4 +104,4 @@ const remove = async (req, res) => {
     }
 };
 
-export default { select, create, remove };
+export default { list, create, remove };
