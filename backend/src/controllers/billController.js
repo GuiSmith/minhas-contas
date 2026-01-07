@@ -4,6 +4,31 @@ import CategoryModel from '../database/models/categoryModel.js';
 
 // Utils
 import { parseNumber } from '../utils/format.js';
+import { Op } from 'sequelize';
+
+// Services
+import { getDashboardTotals } from '../services/billService.js';
+
+const dashboard = async (req, res) => {
+    try {
+        const dash = await getDashboardTotals(req.user.id);
+
+        const dashboardData = {
+            pagar_neste_mes: dash.dueThisMonth,
+            pago_neste_mes: dash.paidThisMonth,
+            atrasado: dash.overDue,
+            pagar_proximo_mes: dash.dueNextMonth,
+            total_por_categoria: dash.categoryTotal,
+            total_por_categoria_neste_mes: dash.categoryTotalThisMonth
+        };
+
+        return res.status(200).json(dashboardData);
+
+    } catch (error) {
+        console.error('Erro ao buscar dashboard', error);
+        return res.status(500).json({ message: 'Erro desconhecido. Contate o suporte!' });
+    }
+};
 
 const select = async (req, res) => {
     try {
@@ -67,7 +92,7 @@ const create = async (req, res) => {
         }
 
         // Descrição não pode ser vazia
-        if(!data.descricao || data.descricao.trim() === '') {
+        if (!data.descricao || data.descricao.trim() === '') {
             return res.status(400).json({ message: 'Descrição inválida' });
         } else {
             data.descricao = data.descricao.trim();
@@ -98,7 +123,7 @@ const create = async (req, res) => {
 
         // Ativo
         if (data.ativo) {
-            if(BillModel.getAttributes().ativo.type.values.includes(data.ativo) === false){
+            if (BillModel.getAttributes().ativo.type.values.includes(data.ativo) === false) {
                 return res.status(400).json('Status inválido');
             }
         }
@@ -119,7 +144,7 @@ const update = async (req, res) => {
 
         const body = req.body ?? {};
 
-        if(!id){
+        if (!id) {
             return res.status(400).json({ message: 'Informe o ID para continuar' });
         }
 
@@ -131,17 +156,9 @@ const update = async (req, res) => {
             return res.status(400).json({ message: 'Conta não encontrada' });
         }
 
-        // Descrição única por categoria
-        const duplicateDescriptionBill = await BillModel.findOne({
-            where: { descricao: data.descricao, id_categoria: data.id_categoria, id_user: data.id_user }
-        });
-        if (duplicateDescriptionBill) {
-            return res.status(400).json({ message: 'Já existe uma conta com essa descrição nessa categoria' });
-        }
-
         // Colunas permitidas
         const permittedColumns = ['descricao', 'id_categoria', 'valor_base', 'tipo_recorrencia', 'mes_inicial', 'dia_fixo', 'ativo', 'observacoes'];
-        
+
         // Rejeitar chaves desnecessárias
         for (const key of Object.keys(body)) {
             if (!permittedColumns.includes(key)) {
@@ -151,8 +168,21 @@ const update = async (req, res) => {
 
         const data = body;
 
+        // Descrição única por categoria
+        const duplicateDescriptionBill = await BillModel.findOne({
+            where: {
+                descricao: data.descricao,
+                id_categoria: data.id_categoria,
+                id_user: req.user.id,
+                id: { [Op.ne]: id },
+            }
+        });
+        if (duplicateDescriptionBill) {
+            return res.status(400).json({ message: 'Já existe uma conta com essa descrição nessa categoria' });
+        }
+
         // Coerção de tipos
-        if(data.valor_base){
+        if (data.valor_base) {
             data.valor_base = parseNumber(body.valor_base);
 
             if (data.valor_base === null || data.valor_base <= 0) {
@@ -161,7 +191,7 @@ const update = async (req, res) => {
         }
 
         // Categoria
-        if(data.id_categoria){
+        if (data.id_categoria) {
             const category = await CategoryModel.findOne({
                 where: { id: data.id_categoria, id_user: req.user.id }
             });
@@ -171,14 +201,14 @@ const update = async (req, res) => {
         }
 
         // Recorrência
-        if(data.tipo_recorrencia){
+        if (data.tipo_recorrencia) {
             if (!BillModel.getAttributes().tipo_recorrencia.type.values.includes(data.tipo_recorrencia)) {
                 return res.status(400).json({ message: "Tipo de recorrência inválida" });
             }
         }
 
         // Dia fixo
-        if(data.dia_fixo){
+        if (data.dia_fixo) {
             if (data.dia_fixo < 0 || data.dia_fixo > 25) {
                 return res.status(400).json({ message: "Dia fixo deve ser entre 1 e 25" });
             }
@@ -186,7 +216,7 @@ const update = async (req, res) => {
 
         // Ativo
         if (data.ativo) {
-            if(BillModel.getAttributes().ativo.type.values.includes(data.ativo) === false){
+            if (BillModel.getAttributes().ativo.type.values.includes(data.ativo) === false) {
                 return res.status(400).json('Status inválido');
             }
         }
@@ -200,4 +230,4 @@ const update = async (req, res) => {
     }
 }
 
-export default { select, create, update };
+export default { dashboard, select, create, update };

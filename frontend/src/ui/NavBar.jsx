@@ -25,7 +25,7 @@ const NavBar = () => {
             text: 'Nova Conta',
         },
         {
-            to: '/bills',
+            to: '/bill/list',
             text: 'Contas'
         },
         {
