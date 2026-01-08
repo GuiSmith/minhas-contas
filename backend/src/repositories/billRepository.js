@@ -1,24 +1,24 @@
 import database from '../database/database.js';
 import { QueryTypes } from 'sequelize';
 
-const getTotalDueByUser = async (idUser, startDate, endDate) => {
+const getMonthlyDueByUser = async (idUser, date) => {
     const [row] = await database.query(
-        `SELECT SUM(GREATEST((TIMESTAMPDIFF(MONTH,IF(:startDate > cr.mes_inicial,:startDate,cr.mes_inicial),:endDate) + 1) - IFNULL(p.meses_pago,0),0) * cr.valor_base) AS total
+        `SELECT SUM(IF(p.valor > 0,0,cr.valor_base)) AS total
         FROM contas_recorrentes cr
         LEFT JOIN (
-            SELECT p.id_conta, IFNULL(COUNT(DISTINCT DATE_FORMAT(data,'%Y-%m')),0) AS meses_pago
+            SELECT p.id_conta, p.valor
             FROM pagamento p
-            WHERE p.id_user = :idUser AND p.data BETWEEN :startDate AND :endDate
+            WHERE p.id_user = :idUser AND p.data BETWEEN DATE_FORMAT(:date, '%Y-%m-01') AND LAST_DAY(:date)
             GROUP BY p.id_conta
         ) p ON p.id_conta = cr.id
         WHERE cr.id_user = :idUser`,
         {
-            replacements: { idUser, startDate, endDate },
+            replacements: { idUser, date },
             type: QueryTypes.SELECT,
         }
     );
 
-    return row;
+    return row; 
 }
 
 const getTotalOverdueByUser = async (idUser) => {
@@ -82,6 +82,7 @@ const getBillsByUser = async (idUser) => {
             cr.descricao,
             cr.mes_inicial,
             cr.valor_base,
+            cr.dia_fixo,
             ((TIMESTAMPDIFF(MONTH,cr.mes_inicial,DATE_FORMAT(CURDATE(), '%Y-%m-01')) + IF(DATE_FORMAT(cr.mes_inicial, '%Y-%m-01') = DATE_FORMAT(CURDATE(), '%Y-%m-01'),0,1)) - IFNULL(pa.meses_anteriores_pagos,0) * cr.valor_base) AS valor_atrasado,
             IFNULL(SUM(p.valor),0) AS valor_pago
         FROM contas_recorrentes cr
@@ -107,4 +108,4 @@ const getBillsByUser = async (idUser) => {
     return rows;
 }
 
-export default { getTotalDueByUser, getTotalPaidByUser, getCategoryTotalByUser, getBillsByUser, getTotalOverdueByUser};
+export default { getMonthlyDueByUser, getTotalPaidByUser, getCategoryTotalByUser, getBillsByUser, getTotalOverdueByUser};

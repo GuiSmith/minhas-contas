@@ -16,7 +16,7 @@ const getDashboardTotals = async (idUser) => {
     const dash = {};
     
     // A pagar neste mês
-    dash.dueThisMonth = await billRepository.getTotalDueByUser(idUser, firstDayMonth, lastDayMonth);
+    dash.dueThisMonth = await billRepository.getMonthlyDueByUser(idUser, today);
 
     // Pago neste mês
     dash.paidThisMonth = await billRepository.getTotalPaidByUser(idUser, firstDayMonth, lastDayMonth);
@@ -24,8 +24,8 @@ const getDashboardTotals = async (idUser) => {
     // Atrasado
     dash.overDue = await billRepository.getTotalOverdueByUser(idUser);
 
-    // Próximo ano
-    dash.dueNextMonth = await billRepository.getTotalDueByUser(idUser, firstDayNextMonth, lastDayNextMonth);
+    // Próximo mês
+    dash.dueNextMonth = await billRepository.getMonthlyDueByUser(idUser, firstDayNextMonth);
 
     // Total por categoria
     dash.categoryTotal = await billRepository.getCategoryTotalByUser(idUser, maxStartDate,maxEndDate);
