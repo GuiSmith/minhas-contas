@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 
 // UI
 import { ToastContainer, toast } from 'react-toastify';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { fixedDate } from '@utils/formats.jsx';
 
 // Services
@@ -11,10 +11,13 @@ import { apiUrl, apiOptions } from '@services/API';
 
 // Personalized UI
 import Loading from '@components/Loading';
-import BillCard from '@ui/BillCard';
+import DashCard from '@ui/DashCard';
 import { floatToBRL } from '../../utils/formats';
+import '@styles/billList.css';
 
 const BillList = () => {
+
+    const navigate = useNavigate();
 
     const [dashboard, setDashboard] = useState({});
     const [bills, setBills] = useState([]);
@@ -62,6 +65,7 @@ const BillList = () => {
 
                 if (res.ok) {
                     setBills(resData);
+                    toast.info('Clique duas vezes na conta para visualizá-la!');
                 } else {
                     toast.warning("Erro ao buscar listar contas!");
                 }
@@ -90,28 +94,28 @@ const BillList = () => {
         <section className='container'>
             {/* Cards */}
             <article className='d-flex flex-wrap justify-content-center gap-3'>
-                <BillCard
+                <DashCard
                     title='Total a pagar'
                     iconClass='bi-exclamation-circle'
                     amount={dashboard.pagar_neste_mes?.total}
                     text='Total de contas pendentes'
                     textClass='text-warning'
                 />
-                <BillCard
+                <DashCard
                     title='Total pago'
                     iconClass='bi-currency-dollar'
                     amount={dashboard.pago_neste_mes?.total}
                     text='Pagamentos realizados este mês'
                     textClass='text-success'
                 />
-                <BillCard
+                <DashCard
                     title='Total atrasado'
                     iconClass='bi-clock-history'
                     amount={dashboard.atrasado?.total}
                     text='Contas com vencimento passado'
                     textClass='text-danger'
                 />
-                <BillCard
+                <DashCard
                     title='Próximo mês'
                     iconClass='bi-calendar-date'
                     amount={dashboard.pagar_proximo_mes?.total}
@@ -127,9 +131,10 @@ const BillList = () => {
                     <div>
                         {Object.entries(status).map(([className, text]) => (
                             <button
-                                className={`ms-1 btn btn-sm ${billStatus == text ? 'btn-'+className : 'btn-outline-'+className}`}
+                                key={`button-${text}`}
+                                className={`ms-1 btn btn-sm ${billStatus == text ? 'btn-' + className : 'btn-outline-' + className}`}
                                 onClick={handleBillStatus}
-                                >
+                            >
                                 {text}
                             </button>
                         ))}
@@ -144,11 +149,16 @@ const BillList = () => {
                         } else if (bill.valor_pago > 0) {
                             localStatus = 'success';
                         } else {
-                            statuslocalStatus = 'warning';
+                            localStatus = 'warning';
                         }
 
                         return (
-                            <div key={`bill-${bill.id}`} className={`${(billStatus != '' && billStatus != status[localStatus]) ? 'd-none' : 'd-block'} card card-highlight border-${localStatus} shadow-sm rounded-3 mb-2`} style={{ borderLeftWidth: '4px' }}>
+                            <div
+                                key={`bill-${bill.id}`}
+                                onDoubleClick={() => navigate(`/bill/form/${bill.id}`) }
+                                className={`${(billStatus != '' && billStatus != status[localStatus]) ? 'd-none' : 'd-block'} card card-highlight border-${localStatus} shadow-sm rounded-3 mb-2 bill-card`}
+                                title='Clique duas vezes para visualizar a conta'
+                            >
                                 <div className='card-body d-flex flex-wrap justify-content-between'>
                                     <div className='d-flex flex-column justify-content-center'>
                                         <div className='mb-1'>
@@ -158,7 +168,7 @@ const BillList = () => {
                                         <small className='text-muted'>{fixedDate(bill.mes_inicial)}</small>
                                     </div>
                                     <div className='d-flex flex-column justify-content-center'>
-                                        <span className='fw-bold'>R$ {floatToBRL(bill.valor_base)} <NavLink to={`/bill/form/${bill.id}`} className={'ms-2 btn btn-outline-dark'} >Pagar</NavLink></span>
+                                        <span className='fw-bold'>R$ {floatToBRL(bill.valor_base)} <NavLink to='/payment/form' className={'ms-2 btn btn-outline-dark'} state={{ id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink></span>
                                     </div>
                                 </div>
                             </div>

@@ -1,0 +1,9 @@
+.bill-card {
+    border-left-width: 4px;
+    cursor: pointer;
+}
+
+.bill-card:hover {
+    opacity: 0.5;
+    transition: opacity 0.5s ease;
+}

@@ -1,6 +1,6 @@
 import { floatToBRL } from '@utils/formats';
 
-const BillCard = ({ title, iconClass, amount, text, textClass }) => {
+const DashCard = ({ title, iconClass, amount, text, textClass }) => {
     {/* Total a pagar */ }
     return (
         <div className='card shadow-sm rounded-3'>
@@ -16,4 +16,4 @@ const BillCard = ({ title, iconClass, amount, text, textClass }) => {
     )
 }
 
-export default BillCard;
+export default DashCard;

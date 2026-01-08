@@ -18,10 +18,11 @@ import '@styles/form.css';
 const BillForm = () => {
 
     const { register, handleSubmit, watch, reset } = useForm();
+
     const [isLoading, setIsLoading] = useState(false);
-    const [isWaitingResponse, setIsWaitingResponse] = useState(false);
     const [categories, setCategories] = useState([]);
     const [bill, setBill] = useState({});
+    const [payments,setPayments] = useState([]);
 
     const location = useLocation();
     const params = useParams();
@@ -110,6 +111,37 @@ const BillForm = () => {
 
         fetchBill();
     }, [location.pathname]);
+
+    useEffect(() => {
+        const fetchPayments = async () => {
+            try {
+                if(!bill.id) return;
+
+                setIsLoading(true);
+
+                const res = await fetch(`${apiUrl}payment/${bill.id}`, apiOptions('GET'));
+                const resData = await res.json();
+
+                if (!res.ok) {
+                    toast.warning(resData.message);
+                    console.log('Erro ao listar pagamentos');
+                    console.error(resData);
+                    return;
+                }
+
+                console.log(resData);
+
+                setPayments(resData);
+            } catch (error) {
+                toast.error('Erro ao listar pagamentos. Contate o suporte!');
+                console.log('Erro ao listar pagamentos');
+                console.error(error);
+            } finally {
+                setIsLoading(false);
+            }
+        };
+        fetchPayments();
+    },[]);
 
     // Validações
     const validations = async (data) => {
@@ -210,10 +242,6 @@ const BillForm = () => {
 
     const onSubmit = async (data) => {
         try {
-            if (isWaitingResponse === true) {
-                toast.warning('Responda antes de continuar!');
-                return;
-            }
 
             setIsLoading(true);
 
@@ -255,7 +283,7 @@ const BillForm = () => {
                     {/* Botões */}
                     <div className='form-line'>
                         <button type='button' onClick={handleNewButton} className='btn btn-primary' >Novo</button>
-                        <button type='submit' disabled={isWaitingResponse || isLoading} className='btn btn-success'>Salvar</button>
+                        <button type='submit' disabled={isLoading} className='btn btn-success'>Salvar</button>
                         <NavLink to='/bill/list' className={'btn btn-secondary'} >Listar</NavLink>
                         <NavLink to='/payment/form' className={`btn btn-dark ${Object.keys(bill).length > 0 ? '' : 'disabled'}`} state={{id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink>
                     </div>
