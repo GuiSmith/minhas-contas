@@ -65,7 +65,6 @@ const BillList = () => {
 
                 if (res.ok) {
                     setBills(resData);
-                    toast.info('Clique duas vezes na conta para visualizá-la!');
                 } else {
                     toast.warning("Erro ao buscar listar contas!");
                 }
@@ -80,7 +79,6 @@ const BillList = () => {
     }, []);
 
     const handleBillStatus = (e) => {
-        console.log(e.target.textContent);
         setBillStatus(e.target.textContent == billStatus ? '' : e.target.textContent);
     };
 
@@ -155,12 +153,11 @@ const BillList = () => {
                         return (
                             <div
                                 key={`bill-${bill.id}`}
-                                onDoubleClick={() => navigate(`/bill/form/${bill.id}`) }
                                 className={`${(billStatus != '' && billStatus != status[localStatus]) ? 'd-none' : 'd-block'} card card-highlight border-${localStatus} shadow-sm rounded-3 mb-2 bill-card`}
                                 title='Clique duas vezes para visualizar a conta'
                             >
                                 <div className='card-body d-flex flex-wrap justify-content-between'>
-                                    <div className='d-flex flex-column justify-content-center'>
+                                    <div className='d-flex flex-column justify-content-center bill-card-link' onClick={() => navigate(`/bill/form/${bill.id}`)} >
                                         <div className='mb-1'>
                                             <span className='fw-bold'>{bill.descricao}</span>
                                             <span className={`ms-2 align-middle badge bg-${localStatus}`}>{status[localStatus]}</span>

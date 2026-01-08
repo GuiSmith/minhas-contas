@@ -1,6 +1,7 @@
 // Libraries
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 
 // UI
 import { ToastContainer, toast } from 'react-toastify';
@@ -14,6 +15,9 @@ import Loading from '@components/Loading';
 
 // Styles
 import '@styles/form.css';
+
+// Constants
+import { paymentMethods } from '@constants/paymentConstants';
 
 const PaymentForm = () => {
     const location = useLocation();
@@ -29,7 +33,8 @@ const PaymentForm = () => {
         juros: '0.00',
         multa: '0.00',
         desconto: '0.00',
-        observacoes: ''
+        observacoes: '',
+        data: dayjs().format('YYYY-MM-DD'),
     };
 
     const { register, handleSubmit, watch, reset, setValue } = useForm({ defaultValues });
@@ -115,7 +120,7 @@ const PaymentForm = () => {
 
             if (res.ok) {
                 toast.success('Pagamento registrado!');
-                navigate(`/bill/${id_conta}`);
+                navigate(`/bill/form/${id_conta}`);
             } else {
                 toast.warning(resData.message || 'Erro ao registrar pagamento');
             }
@@ -166,12 +171,15 @@ const PaymentForm = () => {
                     <div className='mb-3'>
                         <label htmlFor="forma-pagamento" className='form-label'>Forma de Pagamento</label>
                         <select id="forma-pagamento" className='form-select' {...register('forma_pagamento')}>
-                            <option value="P">Pix</option>
+                            {Object.entries(paymentMethods).map(([value,text]) => (
+                                <option key={`method-${value}`} value={value} >{text}</option>
+                            ))}
+                            {/* <option value="P">Pix</option>
                             <option value="D">Dinheiro</option>
                             <option value="CC">Cartão de Crédito</option>
                             <option value="CD">Cartão de Débito</option>
                             <option value="B">Boleto</option>
-                            <option value="T">Transferência Bancária</option>
+                            <option value="T">Transferência Bancária</option> */}
                         </select>
                     </div>
                 </div>

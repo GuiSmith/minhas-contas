@@ -1,6 +1,7 @@
 // Libraries
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
+import dayjs from 'dayjs';
 
 // UI
 import { ToastContainer, toast } from 'react-toastify';
@@ -11,9 +12,12 @@ import { apiUrl, apiOptions } from '@services/API';
 
 // Personalized UI
 import Loading from '@components/Loading';
+import { paymentMethods, acceptableMarginPercentage } from '@constants/paymentConstants.jsx';
+import { floatToBRL } from '@utils/formats';
 
 // Styles
 import '@styles/form.css';
+import '@styles/billForm.css';
 
 const BillForm = () => {
 
@@ -22,7 +26,7 @@ const BillForm = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [categories, setCategories] = useState([]);
     const [bill, setBill] = useState({});
-    const [payments,setPayments] = useState([]);
+    const [payments, setPayments] = useState([]);
 
     const location = useLocation();
     const params = useParams();
@@ -115,7 +119,7 @@ const BillForm = () => {
     useEffect(() => {
         const fetchPayments = async () => {
             try {
-                if(!bill.id) return;
+                if (!bill.id) return;
 
                 setIsLoading(true);
 
@@ -129,8 +133,6 @@ const BillForm = () => {
                     return;
                 }
 
-                console.log(resData);
-
                 setPayments(resData);
             } catch (error) {
                 toast.error('Erro ao listar pagamentos. Contate o suporte!');
@@ -141,7 +143,7 @@ const BillForm = () => {
             }
         };
         fetchPayments();
-    },[]);
+    }, [bill]);
 
     // Validações
     const validations = async (data) => {
@@ -265,6 +267,32 @@ const BillForm = () => {
         }
     }
 
+    const onDelete = async (id) => {
+        try {
+            const completeUrl = `${apiUrl}payment/${id}`;
+
+            setIsLoading(true);
+
+            const res = await fetch(completeUrl, apiOptions('DELETE'));
+            const resData = await res.json();
+
+            console.log(res);
+            console.log(resData);
+
+            if(res.ok){
+                toast.success('Pagamento deletado!');
+                setPayments(prev => prev.filter(payment => payment.id !== id));
+            } else {
+                toast.warning('Pagamento não deletado. Contate o suporte!');
+            }
+        } catch (error) {
+            toast.error('Erro ao deletar pagamento!');
+            console.error(error);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <article>
             {/* Título */}
@@ -272,20 +300,20 @@ const BillForm = () => {
                 <h1 className='fw-bold'>Contas recorrentes</h1>
                 <p>Gerencia sua contas recorrentes</p>
             </div>
-            <section className='form-line'>
+            <section>
                 {/* Formulário */}
-                <form action="#" className='card shadow-sm p-3' onSubmit={handleSubmit(onSubmit)} >
+                <form action="#" className='card shadow-sm p-3 mb-3' onSubmit={handleSubmit(onSubmit)} >
                     {/* Título */}
                     <div className='text-center'>
-                        <h2>Formulário</h2>
-                        <p>Altere sua conta a pagar aqui</p>
+                        <h2>Contas</h2>
+                        <p>Cadastre ou registre sua conta recorrente</p>
                     </div>
                     {/* Botões */}
                     <div className='form-line'>
                         <button type='button' onClick={handleNewButton} className='btn btn-primary' >Novo</button>
                         <button type='submit' disabled={isLoading} className='btn btn-success'>Salvar</button>
                         <NavLink to='/bill/list' className={'btn btn-secondary'} >Listar</NavLink>
-                        <NavLink to='/payment/form' className={`btn btn-dark ${Object.keys(bill).length > 0 ? '' : 'disabled'}`} state={{id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink>
+                        <NavLink to='/payment/form' className={`btn btn-dark ${Object.keys(bill).length > 0 ? '' : 'disabled'}`} state={{ id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink>
                     </div>
                     {/* Campos */}
                     <div>
@@ -355,10 +383,51 @@ const BillForm = () => {
                     </div>
                 </form>
                 {/* Pagamentos */}
-                <div className='card shadow-sm p-3 table-container'>
-                    <table>
-                        
-                    </table>
+                <div className='mb-3' >
+                    {/* Título */}
+                    <div className='text-center'>
+                        <h2>Pagamentos</h2>
+                        <p>Pagamentos realizados</p>
+                    </div>
+                    {/* Pagamentos */}
+                    {!isLoading && payments.length == 0 ? <p className='text-center'>...</p> : <></>}
+                    {!isLoading && payments.map(payment => {
+                        const status = {};
+
+                        if(payment.valor < (acceptableMarginPercentage*bill.valor_base)) {
+                            status.className = 'warning';
+                            status.text = 'Barato demais';
+                        } else if (payment.valor > ((1+acceptableMarginPercentage)*bill.valor_base)){
+                            status.className = 'danger';
+                            status.text = 'Caro';
+                        } else {
+                            status.className = 'success';
+                            status.text = 'Normal';
+                        }
+
+                        return (
+                            <div key={`payment-${payment.id}`} className={`card card-highlight shadow-sm rounded-3 border-${status.className} mb-2`} style={{ borderLeftWidth: '4px' }}>
+                                <div className='card-body d-flex flex-wrap justify-content-between'>
+                                    <div className='d-flex flex-column justify-content-center'>
+                                        <div className='mb-1'>
+                                            <span className='fw-bold'>{paymentMethods[payment.forma_pagamento]}</span>
+                                            <span className={`ms-2 badge bg-${status.className}`}>{status.text}</span>
+                                        </div>
+                                        <span>
+                                            <i className={`bi bi-calendar-date text-info`}></i>    
+                                            <span className='ms-2'>{dayjs(payment.data).format('DD/MM/YYYY')}</span>
+                                        </span>
+                                    </div>
+                                    <div className='d-flex flex-column justify-content-center'>
+                                        <span className='fw-bold' >
+                                            R$ {floatToBRL(payment.valor)}
+                                            <button className='ms-2 btn btn-outline-danger' onClick={() => onDelete(payment.id)}>Deletar</button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    })}
                 </div>
             </section>
             <ToastContainer position='bottom-right' />
