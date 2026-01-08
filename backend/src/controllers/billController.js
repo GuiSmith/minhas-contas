@@ -7,7 +7,7 @@ import { parseNumber } from '../utils/format.js';
 import { Op } from 'sequelize';
 
 // Services
-import { getDashboardTotals } from '../services/billService.js';
+import { getDashboardTotals, getBills } from '../services/billService.js';
 
 const dashboard = async (req, res) => {
     try {
@@ -26,6 +26,17 @@ const dashboard = async (req, res) => {
 
     } catch (error) {
         console.error('Erro ao buscar dashboard', error);
+        return res.status(500).json({ message: 'Erro desconhecido. Contate o suporte!' });
+    }
+};
+
+const list = async (req, res) => {
+    try {
+        const bills = await getBills(req.user.id);
+
+        return res.status(200).json(bills);
+    } catch (error) {
+        console.error('Erro ao buscar contas', error);
         return res.status(500).json({ message: 'Erro desconhecido. Contate o suporte!' });
     }
 };
@@ -230,4 +241,4 @@ const update = async (req, res) => {
     }
 }
 
-export default { dashboard, select, create, update };
+export default { dashboard, select, create, update, list };

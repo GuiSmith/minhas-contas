@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+
 const floatToBRL = (amount) => {
     const value = Number(amount);
 
@@ -9,4 +11,13 @@ const floatToBRL = (amount) => {
     });
 };
 
-export { floatToBRL };
+const fixedDate = (dbDate) => {
+    const today = dayjs();
+    const day = dayjs(dbDate).date();
+
+    const fixedDate = today.date(day).format('DD/MM/YYYY');
+
+    return fixedDate;
+};
+
+export { floatToBRL, fixedDate };

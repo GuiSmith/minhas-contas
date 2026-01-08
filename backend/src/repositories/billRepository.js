@@ -1,8 +1,6 @@
 import database from '../database/database.js';
 import { QueryTypes } from 'sequelize';
 
-import dayjs from 'dayjs';
-
 const getTotalDueByUser = async (idUser, startDate, endDate) => {
     const [row] = await database.query(
         `SELECT SUM(GREATEST((TIMESTAMPDIFF(MONTH,IF(:startDate > cr.mes_inicial,:startDate,cr.mes_inicial),:endDate) + 1) - IFNULL(p.meses_pago,0),0) * cr.valor_base) AS total
@@ -57,4 +55,36 @@ const getCategoryTotalByUser = async (idUser, startDate, endDate) => {
     return rows;
 };
 
-export default { getTotalDueByUser, getTotalPaidByUser, getCategoryTotalByUser };
+const getBillsByUser = async (idUser) => {
+    const rows = await database.query(
+        `SELECT
+            cr.id,
+            cr.descricao,
+            cr.mes_inicial,
+            cr.valor_base,
+            ((TIMESTAMPDIFF(MONTH,cr.mes_inicial,DATE_FORMAT(CURDATE(), '%Y-%m-01')) + IF(DATE_FORMAT(cr.mes_inicial, '%Y-%m-01') = DATE_FORMAT(CURDATE(), '%Y-%m-01'),0,1)) - IFNULL(pa.meses_anteriores_pagos,0) * cr.valor_base) AS valor_atrasado,
+            IFNULL(SUM(p.valor),0) AS valor_pago
+        FROM contas_recorrentes cr
+        LEFT JOIN (
+            SELECT p.id_conta, COUNT(DISTINCT DATE_FORMAT(p.data, '%Y-%m')) AS meses_anteriores_pagos
+            FROM pagamento p
+            WHERE p.data < DATE_FORMAT(CURDATE(), '%Y-%m-01') AND p.id_user = :idUser
+            GROUP BY p.id_conta
+        ) AS pa ON pa.id_conta = cr.id
+        LEFT JOIN (
+            SELECT p.id_conta, p.valor
+            FROM pagamento p
+            WHERE p.id_user = :idUser AND p.data BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
+        ) p ON p.id_conta = cr.id
+        WHERE cr.id_user = :idUser
+        GROUP BY cr.id`,
+        {
+            replacements: { idUser },
+            type: QueryTypes.SELECT
+        },
+    );
+
+    return rows;
+}
+
+export default { getTotalDueByUser, getTotalPaidByUser, getCategoryTotalByUser, getBillsByUser};

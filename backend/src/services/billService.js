@@ -37,4 +37,10 @@ const getDashboardTotals = async (idUser) => {
 
 }
 
-export { getDashboardTotals };
+const getBills = async (idUser) => {
+    const bills = await billRepository.getBillsByUser(idUser);
+
+    return bills;
+}
+
+export { getDashboardTotals, getBills };
