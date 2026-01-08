@@ -21,6 +21,26 @@ const getTotalDueByUser = async (idUser, startDate, endDate) => {
     return row;
 }
 
+const getTotalOverdueByUser = async (idUser) => {
+    const [row] = await database.query(
+        `SELECT SUM(GREATEST(TIMESTAMPDIFF(MONTH,DATE_FORMAT(mes_inicial,'%Y-%m-01'),DATE_FORMAT(CURDATE(), '%Y-%m-01')) - IFNULL(p.meses_pago,0),0) * cr.valor_base) AS total
+        FROM contas_recorrentes cr
+        LEFT JOIN (
+            SELECT p.id_conta, IFNULL(COUNT(DISTINCT DATE_FORMAT(data,'%Y-%m')),0) AS meses_pago
+            FROM pagamento p
+            WHERE p.id_user = :idUser AND p.data <= LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
+            GROUP BY p.id_conta
+        ) p ON p.id_conta = cr.id
+        WHERE cr.id_user = :idUser`,
+        {
+            replacements: { idUser },
+            type: QueryTypes.SELECT,
+        }
+    );
+
+    return row;
+};
+
 const getTotalPaidByUser = async (idUser, startDate, endDate) => {
 
     const [row] = await database.query(
@@ -87,4 +107,4 @@ const getBillsByUser = async (idUser) => {
     return rows;
 }
 
-export default { getTotalDueByUser, getTotalPaidByUser, getCategoryTotalByUser, getBillsByUser};
+export default { getTotalDueByUser, getTotalPaidByUser, getCategoryTotalByUser, getBillsByUser, getTotalOverdueByUser};
