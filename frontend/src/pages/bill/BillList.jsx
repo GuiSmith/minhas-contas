@@ -125,7 +125,7 @@ const BillList = () => {
             <article className='mt-3 container card shadow-sm rounded-3 p-3'>
                 {/* Título */}
                 <div className='mb-3 d-flex flex-wrap justify-content-between'>
-                    <h3>Contas</h3>
+                    <h4>Contas ativas</h4>
                     <div>
                         {Object.entries(status).map(([className, text]) => (
                             <button

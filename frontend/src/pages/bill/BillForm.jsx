@@ -13,7 +13,7 @@ import { apiUrl, apiOptions } from '@services/API';
 // Personalized UI
 import Loading from '@components/Loading';
 import { paymentMethods, acceptableMarginPercentage } from '@constants/paymentConstants.jsx';
-import { floatToBRL } from '@utils/formats';
+import { floatToBRL, normalizeCurrencyToDecimal } from '@utils/formats';
 
 // Styles
 import '@styles/form.css';
@@ -53,7 +53,6 @@ const BillForm = () => {
 
                 if (!res.ok) {
                     toast.warning(resData.message);
-                    console.log('Erro ao listar categorias');
                     console.error(resData);
                     return;
                 }
@@ -67,7 +66,6 @@ const BillForm = () => {
                 setCategories(resData);
             } catch (error) {
                 toast.error('Erro ao listar categorias. Contate o suporte!');
-                console.log('Erro ao listar categorias');
                 console.error(error);
             } finally {
                 setIsLoading(false);
@@ -116,6 +114,7 @@ const BillForm = () => {
         fetchBill();
     }, [location.pathname]);
 
+    // Listar pagamentos
     useEffect(() => {
         const fetchPayments = async () => {
             try {
@@ -128,7 +127,6 @@ const BillForm = () => {
 
                 if (!res.ok) {
                     toast.warning(resData.message);
-                    console.log('Erro ao listar pagamentos');
                     console.error(resData);
                     return;
                 }
@@ -136,7 +134,6 @@ const BillForm = () => {
                 setPayments(resData);
             } catch (error) {
                 toast.error('Erro ao listar pagamentos. Contate o suporte!');
-                console.log('Erro ao listar pagamentos');
                 console.error(error);
             } finally {
                 setIsLoading(false);
@@ -156,6 +153,7 @@ const BillForm = () => {
             }
 
             // valor_base não pode ser negativo ou vazio
+            data.valor_base = normalizeCurrencyToDecimal(data.valor_base);
             if (!(data.valor_base > 0)) {
                 toast.warning('valor base precisa ser maior que 0!');
                 return false;
@@ -176,7 +174,6 @@ const BillForm = () => {
             return true;
         } catch (error) {
             toast.error('Erro ao realizar validações. Contate o suporte!');
-            console.log('Erro ao realizar validações');
             console.error(error);
             return false;
         }
@@ -198,9 +195,7 @@ const BillForm = () => {
             const completeUrl = `${apiUrl}${endpoint}`;
 
             const res = await fetch(completeUrl, apiOptions('POST', data));
-            console.table(res);
             const resData = await res.json();
-            console.table(resData);
 
             if (res.ok) {
                 toast.success('Conta cadastrada!');
@@ -224,9 +219,7 @@ const BillForm = () => {
             const completeUrl = `${apiUrl}${endpoint}`;
 
             const res = await fetch(completeUrl, apiOptions('PUT', data));
-            console.table(res);
             const resData = await res.json();
-            console.table(resData);
 
             if (res.ok) {
                 toast.success('Conta atualizada!!');
@@ -260,7 +253,6 @@ const BillForm = () => {
 
         } catch (error) {
             toast.error('Erro ao salvar conta. Contate o suporte!');
-            console.log('Erro ao salvar conta');
             console.error(error);
         } finally {
             setIsLoading(false);
@@ -275,9 +267,6 @@ const BillForm = () => {
 
             const res = await fetch(completeUrl, apiOptions('DELETE'));
             const resData = await res.json();
-
-            console.log(res);
-            console.log(resData);
 
             if(res.ok){
                 toast.success('Pagamento deletado!');

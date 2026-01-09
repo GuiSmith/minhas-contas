@@ -2,7 +2,6 @@
 import { useForm } from 'react-hook-form';
 import { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-
 // UI
 import { ToastContainer, toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -12,6 +11,7 @@ import { apiUrl, apiOptions } from '@services/API';
 
 // Personalized UI
 import Loading from '@components/Loading';
+import { normalizeCurrencyToDecimal } from '@utils/formats';
 
 // Styles
 import '@styles/form.css';
@@ -30,9 +30,6 @@ const PaymentForm = () => {
         id_conta: id_conta,
         forma_pagamento: 'D',
         valor: valor,
-        juros: '0.00',
-        multa: '0.00',
-        desconto: '0.00',
         observacoes: '',
         data: dayjs().format('YYYY-MM-DD'),
     };
@@ -67,22 +64,10 @@ const PaymentForm = () => {
 
     const validations = (data) => {
         // valor > 0
+        console.log('PUTA');
+        data.valor = normalizeCurrencyToDecimal(data.valor);
         if (!(data.valor > 0)) {
             toast.warning('Valor precisa ser maior que 0!');
-            return false;
-        }
-
-        // juros, multa, desconto >= 0
-        if (data.juros < 0) {
-            toast.warning('Juros não pode ser negativo!');
-            return false;
-        }
-        if (data.multa < 0) {
-            toast.warning('Multa não pode ser negativa!');
-            return false;
-        }
-        if (data.desconto < 0) {
-            toast.warning('Desconto não pode ser negativo!');
             return false;
         }
 
@@ -174,43 +159,17 @@ const PaymentForm = () => {
                             {Object.entries(paymentMethods).map(([value,text]) => (
                                 <option key={`method-${value}`} value={value} >{text}</option>
                             ))}
-                            {/* <option value="P">Pix</option>
-                            <option value="D">Dinheiro</option>
-                            <option value="CC">Cartão de Crédito</option>
-                            <option value="CD">Cartão de Débito</option>
-                            <option value="B">Boleto</option>
-                            <option value="T">Transferência Bancária</option> */}
                         </select>
                     </div>
                 </div>
-                {/* Valor e Júros */}
+                {/* Valor e Data de pagamento */}
                 <div className='form-line'>
                     {/* Valor */}
                     <div className='mb-3'>
                         <label htmlFor="valor" className='form-label'>Valor</label>
                         <input type="tel" className='form-control' id='valor' {...register('valor')} placeholder='0.00' />
                     </div>
-                    {/* Júros */}
-                    <div className='mb-3'>
-                        <label htmlFor="juros" className='form-label'>Juros</label>
-                        <input type="tel" className='form-control' id='juros' {...register('juros')} placeholder='0.00' />
-                    </div>
-                </div>
-                {/* Multa e Descontos */}
-                <div className='form-line'>
-                    {/* Multa */}
-                    <div className='mb-3'>
-                        <label htmlFor="multa" className='form-label'>Multa</label>
-                        <input type="tel" className='form-control' id='multa' {...register('multa')} placeholder='0.00' />
-                    </div>
-                    {/* Descontos */}
-                    <div className='mb-3'>
-                        <label htmlFor="desconto" className='form-label'>Desconto</label>
-                        <input type="tel" className='form-control' id='desconto' {...register('desconto')} placeholder='0.00' />
-                    </div>
-                </div>
-                {/* Data de pagamento */}
-                <div className='form-line'>
+                    {/* Data de pagamento */}
                     <div className='mb-3'>
                         <label htmlFor="data" className='form-label'>Data de Pagamento</label>
                         <input type="date" className='form-control' {...register('data')} />

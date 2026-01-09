@@ -11,7 +11,7 @@ const getMonthlyDueByUser = async (idUser, date) => {
             WHERE p.id_user = :idUser AND p.data BETWEEN DATE_FORMAT(:date, '%Y-%m-01') AND LAST_DAY(:date)
             GROUP BY p.id_conta
         ) p ON p.id_conta = cr.id
-        WHERE cr.id_user = :idUser`,
+        WHERE cr.ativo = 'S' AND cr.id_user = :idUser`,
         {
             replacements: { idUser, date },
             type: QueryTypes.SELECT,
@@ -31,7 +31,7 @@ const getTotalOverdueByUser = async (idUser) => {
             WHERE p.id_user = :idUser AND p.data <= LAST_DAY(DATE_SUB(CURDATE(), INTERVAL 1 MONTH))
             GROUP BY p.id_conta
         ) p ON p.id_conta = cr.id
-        WHERE cr.id_user = :idUser`,
+        WHERE cr.ativo = 'S' AND cr.id_user = :idUser`,
         {
             replacements: { idUser },
             type: QueryTypes.SELECT,
@@ -97,7 +97,7 @@ const getBillsByUser = async (idUser) => {
             FROM pagamento p
             WHERE p.id_user = :idUser AND p.data BETWEEN DATE_FORMAT(CURDATE(), '%Y-%m-01') AND LAST_DAY(CURDATE())
         ) p ON p.id_conta = cr.id
-        WHERE cr.id_user = :idUser
+        WHERE cr.ativo = 'S' AND cr.id_user = :idUser
         GROUP BY cr.id`,
         {
             replacements: { idUser },
