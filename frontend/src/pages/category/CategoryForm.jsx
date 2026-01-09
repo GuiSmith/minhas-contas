@@ -223,64 +223,68 @@ const CategoryForm = () => {
     };
 
     return (
-        <article>
-            {/* Título */}
-            <div className='text-center'>
-                <h1 className='fw-bold'>Categorias</h1>
-                <p>Gerencie suas categorias de contas a pagar</p>
-            </div>
-            {/* Formulário */}
-            <form action="#" className='card shadow-sm p-3 mb-3' onSubmit={handleSubmit(onSubmit)}>
-                {/* Botões */}
-                <div className='mb-3 d-flex flex-wrap justify-content-start gap-3'>
-                    <button type='button' disabled={isLoading} onClick={handleNew} className={'btn btn-primary'} >Novo</button>
-                    <button type='submit' disabled={isLoading} className='btn btn-success'>{Object.keys(category).length > 0 ? 'Atualizar' : 'Cadastrar'}</button>
+        <article className='d-flex align-items-top justify-content-center'>
+            <div>
+                {/* Título */}
+                <div className='text-center'>
+                    <h1 className='fw-bold'>Categorias</h1>
+                    <p>Gerencie suas categorias de contas a pagar</p>
                 </div>
-                {/* Descrição */}
-                <div className='mb-3'>
-                    <label htmlFor='descricao' className='form-label'>Descrição</label>
-                    <input type="text" id='descricao' className='form-control' placeholder='Digite a descrição' {...register('descricao')} />
-                </div>
-                {/* Categoria pai */}
-                <div className='mb-3'>
-                    <label htmlFor='id-categoria' className='form-label'>Categoria Pai</label>
-                    <select id='id-categoria' className='form-select' defaultValue="" {...register('id_categoria')} >
-                        <option value="">Selecione uma categoria</option>
-                        {categories.map((category, index) => <option key={`category-${index}`} value={category.id} >{category.descricao_visual}</option>)}
-                    </select>
-                </div>
-            </form>
-            {/* Tabela */}
-            <div className='table-container container'>
-                <table className='table table-stripped'>
-                    <thead>
-                        <tr>
-                            {Object.keys(tableColumns).map((col) => (
-                                <th className='text-center' key={col}>{tableColumns[col].display}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {categories.length === 0 ? (
+                {/* Formulário */}
+                <form action="#" className='card shadow-sm p-3 mb-3' onSubmit={handleSubmit(onSubmit)}>
+                    {/* Botões */}
+                    <div className='mb-3 d-flex flex-wrap justify-content-start gap-3'>
+                        <button type='button' disabled={isLoading} onClick={handleNew} className={'btn btn-primary'} >Novo</button>
+                        <button type='submit' disabled={isLoading} className='btn btn-success'>{Object.keys(category).length > 0 ? 'Atualizar' : 'Cadastrar'}</button>
+                    </div>
+                    {/* Descrição */}
+                    <div className='d-flex flex-wrap justify-content-around gap-2'>
+                        <div>
+                            <label htmlFor='descricao' className='form-label'>Descrição</label>
+                            <input type="text" id='descricao' className='form-control' placeholder='Digite a descrição' {...register('descricao')} />
+                        </div>
+                        <div>
+                            <label htmlFor='id-categoria' className='form-label'>Categoria Pai</label>
+                            <select id='id-categoria' className='form-select' defaultValue="" {...register('id_categoria')} >
+                                <option value="">Selecione uma categoria</option>
+                                {categories.map((category, index) => <option key={`category-${index}`} value={category.id} >{category.descricao_visual}</option>)}
+                            </select>
+                        </div>
+                    </div>
+                </form>
+                {/* Tabela */}
+                <div className='table-container container'>
+                    <table className='table table-stripped'>
+                        <thead>
                             <tr>
-                                <td colSpan={Object.keys(tableColumns).length} className='text-center'>Nenhuma categoria encontrada</td>
+                                {Object.keys(tableColumns).map((col) => (
+                                    <th className='text-center' key={col}>{tableColumns[col].display}</th>
+                                ))}
                             </tr>
-                        ) : (
-                            categories.map((row) => (
-                                <tr key={row.id} onClick={() => navigate(`/category/form/${row.id}`)} style={{cursor: 'pointer'}}>
-                                    {Object.keys(tableColumns).map((col) => {
-                                        const colDef = tableColumns[col] || {};
-                                        const value = row[col];
-                                        const content = typeof colDef.format === 'function' ? colDef.format(value) : (value ?? '');
-                                        return <td key={col}>{content}</td>;
-                                    })}
+                        </thead>
+                        <tbody>
+                            {categories.length === 0 ? (
+                                <tr>
+                                    <td colSpan={Object.keys(tableColumns).length} className='text-center'>Nenhuma categoria encontrada</td>
                                 </tr>
-                            ))
-                        )}
-                    </tbody>
-                </table>
+                            ) : (
+                                categories.map((row) => (
+                                    <tr key={row.id} onClick={() => navigate(`/category/form/${row.id}`)} style={{ cursor: 'pointer' }}>
+                                        {Object.keys(tableColumns).map((col) => {
+                                            const colDef = tableColumns[col] || {};
+                                            const value = row[col];
+                                            const content = typeof colDef.format === 'function' ? colDef.format(value) : (value ?? '');
+                                            return <td key={col}>{content}</td>;
+                                        })}
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                {isLoading ? <Loading /> : <></>}
+                <ToastContainer position='bottom-right' />
             </div>
-            <ToastContainer position='bottom-right' />
         </article>
     )
 };

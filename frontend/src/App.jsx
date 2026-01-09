@@ -15,7 +15,7 @@ function App() {
     <>
       <section className='app-container'>
         <NavBar />
-        <div className='mt-3 page-wrapper d-flex align-items-top justify-content-center'>
+        <div className='mt-3 page-wrapper'>
           <Routes>
             {routes.map(({ path, element, auth }, index) => (
               <Route
@@ -32,4 +32,4 @@ function App() {
   )
 }
 
-export default App
+export default App;

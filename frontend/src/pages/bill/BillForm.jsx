@@ -6,6 +6,7 @@ import dayjs from 'dayjs';
 // UI
 import { ToastContainer, toast } from 'react-toastify';
 import { NavLink, useLocation, useParams, useNavigate } from 'react-router-dom';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 // Services
 import { apiUrl, apiOptions } from '@services/API';
@@ -184,6 +185,7 @@ const BillForm = () => {
         navigate('/bill/form');
         reset({ ...defaultValues });
         setBill({});
+        setPayments([]);
         setIsLoading(false);
     };
 
@@ -268,7 +270,7 @@ const BillForm = () => {
             const res = await fetch(completeUrl, apiOptions('DELETE'));
             const resData = await res.json();
 
-            if(res.ok){
+            if (res.ok) {
                 toast.success('Pagamento deletado!');
                 setPayments(prev => prev.filter(payment => payment.id !== id));
             } else {
@@ -282,6 +284,47 @@ const BillForm = () => {
         }
     };
 
+    const renderGraph = () => {
+        if (isLoading || payments.length === 0) {
+            return (
+                <p className='text-center'>...</p>
+            );
+        }
+
+        const graphPayments = payments.reduce((acc, payment) => {
+            const [year, month] = payment.data.split('-');
+            const formattedDate = `${month}/${year}`;
+
+            const index = acc.findIndex(item => item.data === formattedDate);
+
+            if (index === -1) {
+                acc.push({
+                    data: formattedDate,
+                    valor: payment.valor,
+                });
+            } else {
+                acc[index].valor += payment.valor;
+            }
+
+            return acc;
+        }, []);
+
+        console.log(graphPayments);
+
+        return (
+            <div style={{ width: '100%', height: 300 }}>
+                <ResponsiveContainer>
+                    <BarChart data={graphPayments}>
+                        <XAxis dataKey="data" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="valor" />
+                    </BarChart>
+                </ResponsiveContainer>
+            </div>
+        );
+    }
+
     return (
         <article>
             {/* Título */}
@@ -289,12 +332,12 @@ const BillForm = () => {
                 <h1 className='fw-bold'>Contas recorrentes</h1>
                 <p>Gerencia sua contas recorrentes</p>
             </div>
-            <section>
-                {/* Formulário */}
-                <form action="#" className='card shadow-sm p-3 mb-3' onSubmit={handleSubmit(onSubmit)} >
+            {/* Formulário */}
+            <div className='d-flex align-items-top justify-content-center mb-3'>
+                <form action="#" className='card shadow-sm p-3' onSubmit={handleSubmit(onSubmit)} >
                     {/* Título */}
                     <div className='text-center'>
-                        <h2>Contas</h2>
+                        <h2>Cadastro</h2>
                         <p>Cadastre ou registre sua conta recorrente</p>
                     </div>
                     {/* Botões */}
@@ -371,54 +414,64 @@ const BillForm = () => {
                         </div>
                     </div>
                 </form>
+            </div>
+            {/* Gráfico */}
+            <div className='container card shadow-sm p-3 container-fluid mb-3'>
+                {/* Título */}
+                <div className='text-center'>
+                    <h2>Gráfico</h2>
+                    <p>Veja a os valores de seus pagamentos</p>
+                </div>
+                {/* Gráfico */}
+                {renderGraph()}
+            </div>
+            {/* Pagamentos */}
+            <div className='container card shadow-sm p-3 mb-3'>
+                {/* Título */}
+                <div className='text-center'>
+                    <h2>Pagamentos</h2>
+                    <p>Pagamentos realizados</p>
+                </div>
                 {/* Pagamentos */}
-                <div className='mb-3' >
-                    {/* Título */}
-                    <div className='text-center'>
-                        <h2>Pagamentos</h2>
-                        <p>Pagamentos realizados</p>
-                    </div>
-                    {/* Pagamentos */}
-                    {!isLoading && payments.length == 0 ? <p className='text-center'>...</p> : <></>}
-                    {!isLoading && payments.map(payment => {
-                        const status = {};
+                {!isLoading && payments.length == 0 ? <p className='text-center'>...</p> : <></>}
+                {!isLoading && payments.map(payment => {
+                    const status = {};
 
-                        if(payment.valor < (acceptableMarginPercentage*bill.valor_base)) {
-                            status.className = 'warning';
-                            status.text = 'Barato demais';
-                        } else if (payment.valor > ((1+acceptableMarginPercentage)*bill.valor_base)){
-                            status.className = 'danger';
-                            status.text = 'Caro';
-                        } else {
-                            status.className = 'success';
-                            status.text = 'Normal';
-                        }
+                    if (payment.valor < (acceptableMarginPercentage * bill.valor_base)) {
+                        status.className = 'warning';
+                        status.text = 'Barato demais';
+                    } else if (payment.valor > ((1 + acceptableMarginPercentage) * bill.valor_base)) {
+                        status.className = 'danger';
+                        status.text = 'Caro';
+                    } else {
+                        status.className = 'success';
+                        status.text = 'Normal';
+                    }
 
-                        return (
-                            <div key={`payment-${payment.id}`} className={`card card-highlight shadow-sm rounded-3 border-${status.className} mb-2`} style={{ borderLeftWidth: '4px' }}>
-                                <div className='card-body d-flex flex-wrap justify-content-between'>
-                                    <div className='d-flex flex-column justify-content-center'>
-                                        <div className='mb-1'>
-                                            <span className='fw-bold'>{paymentMethods[payment.forma_pagamento]}</span>
-                                            <span className={`ms-2 badge bg-${status.className}`}>{status.text}</span>
-                                        </div>
-                                        <span>
-                                            <i className={`bi bi-calendar-date text-info`}></i>    
-                                            <span className='ms-2'>{dayjs(payment.data).format('DD/MM/YYYY')}</span>
-                                        </span>
+                    return (
+                        <div key={`payment-${payment.id}`} className={`card card-highlight shadow-sm rounded-3 border-${status.className} mb-2`} style={{ borderLeftWidth: '4px' }}>
+                            <div className='card-body d-flex flex-wrap justify-content-between'>
+                                <div className='d-flex flex-column justify-content-center'>
+                                    <div className='mb-1'>
+                                        <span className='fw-bold'>{paymentMethods[payment.forma_pagamento]}</span>
+                                        <span className={`ms-2 badge bg-${status.className}`}>{status.text}</span>
                                     </div>
-                                    <div className='d-flex flex-column justify-content-center'>
-                                        <span className='fw-bold' >
-                                            R$ {floatToBRL(payment.valor)}
-                                            <button className='ms-2 btn btn-outline-danger' onClick={() => onDelete(payment.id)}>Deletar</button>
-                                        </span>
-                                    </div>
+                                    <span>
+                                        <i className={`bi bi-calendar-date text-info`}></i>
+                                        <span className='ms-2'>{dayjs(payment.data).format('DD/MM/YYYY')}</span>
+                                    </span>
+                                </div>
+                                <div className='d-flex flex-column justify-content-center'>
+                                    <span className='fw-bold' >
+                                        R$ {floatToBRL(payment.valor)}
+                                        <button className='ms-2 btn btn-outline-danger' onClick={() => onDelete(payment.id)}>Deletar</button>
+                                    </span>
                                 </div>
                             </div>
-                        )
-                    })}
-                </div>
-            </section>
+                        </div>
+                    )
+                })}
+            </div>
             <ToastContainer position='bottom-right' />
             {isLoading ? <Loading /> : <></>}
         </article>
