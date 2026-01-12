@@ -2,7 +2,7 @@ const allowedOrigins = [
     'http://localhost:5173',
     'http://127.0.0.1',
     'https://guismith.github.io/minhas-contas-frontend',
-    'iyolvtsp5.localto.net',
+    'https://iyolvtsp5.localto.net',
 ];
 
 const options = {

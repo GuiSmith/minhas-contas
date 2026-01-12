@@ -8,7 +8,7 @@ export default defineConfig({
   build: {
     outDir: 'build',
   },
-  base: '/minhas-contas',
+  base: '/',
   resolve: {
     alias: {
       '@components': path.resolve(__dirname, 'src/components'),

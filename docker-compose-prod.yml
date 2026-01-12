@@ -21,7 +21,8 @@ services:
         condition: service_healthy
     ports:
       - ${BACK_PORT}:${BACK_PORT}
-    command: bash -c "bash init.sh prod"
+    command: "node server.js"
+    # command: bash -c "bash init.sh prod"
   frontend:
     build: ./frontend
     ports:

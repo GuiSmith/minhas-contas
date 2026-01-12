@@ -28,7 +28,7 @@ const Logout = () => {
                         toast.error('Erro ao sair. Contate o suporte...');
                         setIsLoading(false);
                         setTimeout(() => {
-                            navigate('/minhas-contas');
+                            navigate('/');
                         },3000);
                     }
                 }else{

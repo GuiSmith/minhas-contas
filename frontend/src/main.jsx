@@ -17,7 +17,7 @@ import App from './App.jsx'
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
-      <Router basename='/minhas-contas'>
+      <Router basename='/'>
         <App />
       </Router>
     </AuthProvider>

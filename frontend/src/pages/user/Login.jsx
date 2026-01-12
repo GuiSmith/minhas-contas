@@ -38,7 +38,7 @@ const Login = () => {
             if (response.ok) {
                 toast.success('Login realizado com sucesso!');
                 await checkSession();
-                navigate('/minhas-contas');
+                navigate('/');
             } else {
                 toast.warning(responseData.message);
             }
