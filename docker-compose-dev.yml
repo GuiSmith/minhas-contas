@@ -1,0 +1,41 @@
+volumes:
+  vol_mariadb:
+services:
+  db-dev:
+    image: mariadb:11.4
+    restart: always
+    volumes:
+      - vol_mariadb:/var/lib/mysql
+    env_file:
+      - .env
+      - .env.dev
+    ports:
+      - ${DB_PORT}:3306
+    healthcheck:
+      test: [ "CMD", "test", "-S", "/var/run/mysqld/mysqld.sock" ]
+      interval: 5s
+      retries: 5
+  frontend-dev:
+    image: node:latest
+    working_dir: /frontend
+    env_file:
+      - .env.dev
+    volumes:
+      - ./frontend:/frontend
+    ports:
+      - 5173:5173
+    command: bash -c "npm i && npm run dev -- --host"
+  backend-dev:
+    image: node:latest
+    working_dir: /backend
+    volumes:
+      - ./backend:/backend
+    depends_on:
+      db-dev:
+        condition: service_healthy
+    env_file:
+      - .env
+      - .env.dev
+    ports:
+      - ${BACK_PORT}:${BACK_PORT}
+    command: bash -c "npm i && npm run dev"

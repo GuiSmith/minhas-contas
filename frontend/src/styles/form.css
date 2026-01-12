@@ -1,0 +1,28 @@
+.form-label {
+    margin-left: 0.2rem;
+    font-weight: bold;
+}
+
+.form-control {
+    box-shadow: 0 .125rem .25rem rgba(0, 0, 0, 0.075);
+}
+
+input.form-control, select.form-select {
+    width: 15em;
+}
+
+input.form-control.small, select.form-select.small {
+    width: 7em !important;
+}
+
+.form-check-label, .form-check-input, .form-control[type=date], select.form-control {
+    cursor: pointer;
+}
+
+.form-line {
+    margin-bottom: 1rem !important;
+    gap: 1rem !important;
+    display: flex;
+    justify-content: flex-start !important;
+    flex-wrap: wrap !important;
+}

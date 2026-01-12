@@ -1,0 +1,30 @@
+services:
+  db:
+    image: mariadb:11.4
+    restart: always
+    env_file:
+      - .env
+      - .env.prod
+    ports:
+      - ${DB_PORT}:3306
+    healthcheck:
+      test: [ "CMD", "test", "-S", "/var/run/mysqld/mysqld.sock" ]
+      interval: 5s
+      retries: 5
+  backend:
+    build: ./backend
+    env_file:
+      - .env
+      - .env.prod
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - ${BACK_PORT}:${BACK_PORT}
+    command: bash -c "bash init.sh prod"
+  frontend:
+    build: ./frontend
+    ports:
+      - 80:80
+    depends_on:
+      - backend
