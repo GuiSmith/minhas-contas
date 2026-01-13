@@ -123,9 +123,10 @@ const BillList = () => {
             </article>
             {/* Contas */}
             <article className='mt-3 container card shadow-sm rounded-3 p-3'>
-                {/* Título */}
                 <div className='mb-3 d-flex flex-wrap justify-content-between'>
+                    {/* Título */}
                     <h4>Contas ativas</h4>
+                    {/* Botões de status */}
                     <div>
                         {Object.entries(status).map(([className, text]) => (
                             <button
@@ -154,7 +155,6 @@ const BillList = () => {
                             <div
                                 key={`bill-${bill.id}`}
                                 className={`${(billStatus != '' && billStatus != status[localStatus]) ? 'd-none' : 'd-block'} card card-highlight border-${localStatus} shadow-sm rounded-3 mb-2 bill-card`}
-                                title='Clique duas vezes para visualizar a conta'
                             >
                                 <div className='card-body d-flex flex-wrap justify-content-between'>
                                     <div className='d-flex flex-column justify-content-center bill-card-link' onClick={() => navigate(`/bill/form/${bill.id}`)} >
@@ -162,7 +162,7 @@ const BillList = () => {
                                             <span className='fw-bold'>{bill.descricao}</span>
                                             <span className={`ms-2 align-middle badge bg-${localStatus}`}>{status[localStatus]}</span>
                                         </div>
-                                        <small className='text-muted'>{fixedDate(bill.mes_inicial)}</small>
+                                        <small className='text-muted'> <span className='fw-bold text-primary'>{bill.categoria}</span> {fixedDate(bill.mes_inicial)}</small>
                                     </div>
                                     <div className='d-flex flex-column justify-content-center'>
                                         <span className='fw-bold'>R$ {floatToBRL(bill.valor_base)} <NavLink to='/payment/form' className={'ms-2 btn btn-outline-dark'} state={{ id_conta: bill.id, valor: bill.valor_base }} >Pagar</NavLink></span>

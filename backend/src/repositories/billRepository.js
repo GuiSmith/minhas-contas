@@ -83,9 +83,11 @@ const getBillsByUser = async (idUser) => {
             cr.mes_inicial,
             cr.valor_base,
             cr.dia_fixo,
+            c.descricao as categoria,
             ((TIMESTAMPDIFF(MONTH,cr.mes_inicial,DATE_FORMAT(CURDATE(), '%Y-%m-01')) + IF(DATE_FORMAT(cr.mes_inicial, '%Y-%m-01') = DATE_FORMAT(CURDATE(), '%Y-%m-01'),0,1)) - IFNULL(pa.meses_anteriores_pagos,0) * cr.valor_base) AS valor_atrasado,
             IFNULL(SUM(p.valor),0) AS valor_pago
         FROM contas_recorrentes cr
+        JOIN categoria c ON c.id = cr.id_categoria AND cr.id_user = c.id_user
         LEFT JOIN (
             SELECT p.id_conta, COUNT(DISTINCT DATE_FORMAT(p.data, '%Y-%m')) AS meses_anteriores_pagos
             FROM pagamento p
