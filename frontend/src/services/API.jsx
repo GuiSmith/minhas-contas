@@ -5,7 +5,7 @@ const apiOptions = (method, body = null) => {
 
     obj.method = method;
     obj.headers = {
-        'localtonet-skip-warning': 'true',
+        // 'localtonet-skip-warning': 'true',
         'Content-Type': 'application/json',
     };
     obj.credentials = 'include';
